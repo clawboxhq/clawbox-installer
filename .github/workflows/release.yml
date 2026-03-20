@@ -67,11 +67,15 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          name: clawbox-${{ steps.version.outputs.VERSION }}
+          path: .
 
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: List files
+        run: ls -la
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -98,7 +102,10 @@ jobs:
             
             ### What's Changed
             See [CHANGELOG.md](CHANGELOG.md) for details.
-          files: dist/*
+          files: |
+            clawbox-*-darwin-*
+            clawbox-*-linux-*
+            checksums.txt
           draft: false
           prerelease: ${{ contains(steps.version.outputs.VERSION, '-') }}
 
