@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClawBox - Secure AI Assistant in a Box</title>
+    <meta name="description" content="One-click cross-platform installer for OpenShell + NemoClaw + OpenClaw">
+    <meta name="keywords" content="ClawBox, OpenClaw, NemoClaw, OpenShell, AI Assistant, Installer">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #ff4d4d;
+        }
+        .tagline {
+            font-size: 1.2rem;
+            color: #8892b0;
+            margin-bottom: 2rem;
+        }
+        .install-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .install-command {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 1rem;
+            color: #00e5cc;
+            background: #161b22;
+            padding: 1rem;
+            border-radius: 6px;
+            display: block;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .copy-btn:hover {
+            background: #ff6b6b;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .feature h3 {
+            color: #00e5cc;
+            margin-bottom: 0.5rem;
+        }
+        .links {
+            margin-top: 2rem;
+        }
+        .links a {
+            color: #ff4d4d;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🦞</div>
+        <h1>ClawBox</h1>
+        <p class="tagline">Secure AI Assistant in a Box</p>
+        
+        <div class="install-box">
+            <p style="margin-bottom: 1rem;">Install with one command:</p>
+            <code class="install-command" id="installCmd">curl -fsSL https://clawboxhq.github.io/clawbox-installer/install.sh | bash</code>
+            <button class="copy-btn" onclick="copyCommand()">Copy Command</button>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🔒 Secure</h3>
+                <p>Sandboxed execution with policy-based network and filesystem protection</p>
+            </div>
+            <div class="feature">
+                <h3>🌐 Cross-Platform</h3>
+                <p>Supports macOS, Linux, and Windows (WSL2)</p>
+            </div>
+            <div class="feature">
+                <h3>📦 One-Click</h3>
+                <p>Single command installation with automatic dependency setup</p>
+            </div>
+            <div class="feature">
+                <h3>💾 Persistent</h3>
+                <p>Volume mounting keeps your data safe and portable</p>
+            </div>
+        </div>
+        
+        <div class="links">
+            <a href="https://github.com/clawboxhq/clawbox-installer">GitHub</a>
+            <a href="https://github.com/clawboxhq/clawbox-installer#readme">Documentation</a>
+            <a href="https://github.com/clawboxhq/clawbox-installer/issues">Issues</a>
+            <a href="https://discord.gg/XFpfPv9Uvx">Discord</a>
+        </div>
+    </div>
+    
+    <script>
+        function copyCommand() {
+            const cmd = document.getElementById('installCmd').innerText;
+            navigator.clipboard.writeText(cmd).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = 'Copy Command', 2000);
+            });
+        }
+    </script>
+</body>
+</html>
