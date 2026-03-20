@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./cmd/clawbox
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Lint
+        run: |
+          go fmt ./...
+          go vet ./...
+
+  build-matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [arm64, amd64]
+        exclude:
+          - os: ubuntu-latest
+            arch: amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build for ${{ matrix.os }}-${{ matrix.arch }}
+        env:
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          go build -v ./cmd/clawbox
+          ./clawbox version || echo "Binary built successfully"
