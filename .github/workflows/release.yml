@@ -16,6 +16,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +58,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: clawbox-${{ steps.version.outputs.VERSION }}
+          name: binaries
           path: dist/*
 
   release:
@@ -67,47 +69,40 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: clawbox-${{ steps.version.outputs.VERSION }}
-          path: .
-
-      - name: Get version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          name: binaries
+          path: dist
 
       - name: List files
-        run: ls -la
+        run: ls -la dist/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ClawBox v${{ steps.version.outputs.VERSION }}
+          name: ClawBox v${{ needs.build.outputs.version }}
           body: |
-            ## ClawBox v${{ steps.version.outputs.VERSION }}
+            ## ClawBox v${{ needs.build.outputs.version }}
             
             ### Downloads
             | Platform | Architecture | Download |
             |----------|--------------|----------|
-            | macOS | Apple Silicon (M1/M2/M3/M4) | `clawbox-${{ steps.version.outputs.VERSION }}-darwin-arm64` |
-            | macOS | Intel | `clawbox-${{ steps.version.outputs.VERSION }}-darwin-amd64` |
-            | Linux | ARM64 | `clawbox-${{ steps.version.outputs.VERSION }}-linux-arm64` |
-            | Linux | x86_64 | `clawbox-${{ steps.version.outputs.VERSION }}-linux-amd64` |
+            | macOS | Apple Silicon (M1/M2/M3/M4) | `clawbox-${{ needs.build.outputs.version }}-darwin-arm64` |
+            | macOS | Intel | `clawbox-${{ needs.build.outputs.version }}-darwin-amd64` |
+            | Linux | ARM64 | `clawbox-${{ needs.build.outputs.version }}-linux-arm64` |
+            | Linux | x86_64 | `clawbox-${{ needs.build.outputs.version }}-linux-amd64` |
             
             ### Installation
             ```bash
             # Download and install
-            curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ steps.version.outputs.VERSION }}/clawbox-${{ steps.version.outputs.VERSION }}-darwin-arm64 -o clawbox
+            curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-darwin-arm64 -o clawbox
             chmod +x clawbox
             sudo mv clawbox /usr/local/bin/
             ```
             
             ### What's Changed
             See [CHANGELOG.md](CHANGELOG.md) for details.
-          files: |
-            clawbox-*-darwin-*
-            clawbox-*-linux-*
-            checksums.txt
+          files: dist/*
           draft: false
-          prerelease: ${{ contains(steps.version.outputs.VERSION, '-') }}
+          prerelease: ${{ contains(needs.build.outputs.version, '-') }}
 
   test:
     runs-on: ubuntu-latest
