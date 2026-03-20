@@ -281,13 +281,96 @@ mask_sensitive() {
 validate_api_key() {
     local key="$1"
     local len=${#key}
-    
+
     # Basic validation: non-empty, reasonable length
     if [[ -z "$key" ]] || (( len < 8 )); then
         return 1
     fi
-    
+
     return 0
+}
+
+# Provider configuration
+declare -A PROVIDER_CONFIG=(
+    ["nvidia"]="NVIDIA_API_KEY|nvapi-|https://build.nvidia.com/settings/api-keys|https://integrate.api.nvidia.com/v1/models|nvidia/nemotron-3-super-120b-a12b"
+    ["openai"]="OPENAI_API_KEY|sk-|https://platform.openai.com/api-keys|https://api.openai.com/v1/models|gpt-4o"
+    ["anthropic"]="ANTHROPIC_API_KEY|sk-ant-|https://console.anthropic.com/settings/keys|https://api.anthropic.com/v1/messages|claude-sonnet-4-20250514"
+    ["openrouter"]="OPENROUTER_API_KEY|sk-or-|https://openrouter.ai/keys|https://openrouter.ai/api/v1/models|anthropic/claude-sonnet-4"
+)
+
+# Get provider names
+get_providers() {
+    echo "${!PROVIDER_CONFIG[@]}" | tr ' ' '\n' | sort
+}
+
+# Get provider config value by key
+# Usage: get_provider_config "nvidia" "env_var" -> "NVIDIA_API_KEY"
+get_provider_config() {
+    local provider="$1"
+    local field="$2"
+    local config="${PROVIDER_CONFIG[$provider]:-}"
+    
+    if [[ -z "$config" ]]; then
+        return 1
+    fi
+    
+    local env_var key_prefix url validation_url default_model
+    IFS='|' read -r env_var key_prefix url validation_url default_model <<< "$config"
+    
+    case "$field" in
+        env_var) echo "$env_var" ;;
+        key_prefix) echo "$key_prefix" ;;
+        url) echo "$url" ;;
+        validation_url) echo "$validation_url" ;;
+        default_model) echo "$default_model" ;;
+        *) return 1 ;;
+    esac
+}
+
+# Validate API key against provider
+validate_provider_api_key() {
+    local provider="$1"
+    local key="$2"
+    
+    # First, basic validation
+    if ! validate_api_key "$key"; then
+        return 1
+    fi
+    
+    # Provider-specific prefix validation
+    local prefix
+    prefix=$(get_provider_config "$provider" "key_prefix")
+    
+    case "$provider" in
+        nvidia)
+            [[ "$key" == nvapi-* ]]
+            ;;
+        openai)
+            [[ "$key" == sk-* ]]
+            ;;
+        anthropic)
+            [[ "$key" == sk-ant-* ]]
+            ;;
+        openrouter)
+            [[ "$key" == sk-or-* ]]
+            ;;
+        *)
+            # Unknown provider, accept any key
+            return 0
+            ;;
+    esac
+}
+
+# Get provider display name
+get_provider_display_name() {
+    local provider="$1"
+    case "$provider" in
+        nvidia) echo "NVIDIA (NIM API)" ;;
+        openai) echo "OpenAI" ;;
+        anthropic) echo "Anthropic" ;;
+        openrouter) echo "OpenRouter" ;;
+        *) echo "$provider" ;;
+    esac
 }
 
 # Get project root directory

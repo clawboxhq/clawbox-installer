@@ -10,7 +10,8 @@
 #   ./install.sh [options]
 #
 # Options:
-#   --non-interactive    Run without prompts (requires NVIDIA_API_KEY env)
+#   --non-interactive    Run without prompts (requires PROVIDER_API_KEY env)
+#   --provider PROVIDER  LLM provider (nvidia, openai, anthropic, openrouter)
 #   --skip-docker        Skip Docker installation (use existing)
 #   --skip-node          Skip Node.js installation (use existing)
 #   --sandbox-name       Custom sandbox name (default: my-assistant)
@@ -42,6 +43,7 @@ SKIP_NODE="${SKIP_NODE:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 SANDBOX_NAME="${SANDBOX_NAME:-my-assistant}"
 NO_PROMPT="${NO_PROMPT:-0}"
+PROVIDER="${PROVIDER:-nvidia}"
 
 # Print usage
 usage() {
@@ -57,7 +59,9 @@ Usage:
   ./install.sh [options]
 
 Options:
-  --non-interactive    Run without prompts (requires NVIDIA_API_KEY env)
+  --non-interactive    Run without prompts (requires PROVIDER_API_KEY env)
+  --provider PROVIDER  LLM provider: nvidia, openai, anthropic, openrouter
+                       (default: nvidia)
   --skip-docker        Skip Docker installation (use existing)
   --skip-node          Skip Node.js installation (use existing)
   --sandbox-name NAME  Custom sandbox name (default: my-assistant)
@@ -67,18 +71,48 @@ Options:
   --help               Show this help message
 
 Environment Variables:
-  NVIDIA_API_KEY       API key for NVIDIA Cloud (prompted if not set)
-  NON_INTERACTIVE      Set to 1 for non-interactive mode
-  SKIP_DOCKER          Set to 1 to skip Docker installation
-  SKIP_NODE            Set to 1 to skip Node.js installation
-  SANDBOX_NAME         Sandbox name override
+  PROVIDER              LLM provider (nvidia, openai, anthropic, openrouter)
+  NVIDIA_API_KEY        API key for NVIDIA NIM API (when provider=nvidia)
+  OPENAI_API_KEY        API key for OpenAI (when provider=openai)
+  ANTHROPIC_API_KEY     API key for Anthropic (when provider=anthropic)
+  OPENROUTER_API_KEY    API key for OpenRouter (when provider=openrouter)
+  NON_INTERACTIVE       Set to 1 for non-interactive mode
+  SKIP_DOCKER           Set to 1 to skip Docker installation
+  SKIP_NODE             Set to 1 to skip Node.js installation
+  SANDBOX_NAME          Sandbox name override
+
+Providers:
+  nvidia      NVIDIA NIM API (default)
+              Models: nemotron-3-super-120b-a12b, etc.
+              Get key: https://build.nvidia.com/settings/api-keys
+
+  openai      OpenAI API
+              Models: gpt-4o, gpt-4-turbo, gpt-3.5-turbo
+              Get key: https://platform.openai.com/api-keys
+
+  anthropic   Anthropic API
+              Models: claude-sonnet-4-20250514, claude-3-opus, etc.
+              Get key: https://console.anthropic.com/settings/keys
+
+  openrouter  OpenRouter API (multi-provider gateway)
+              Models: All major LLMs via single API
+              Get key: https://openrouter.ai/keys
 
 Examples:
-  # Interactive installation
+  # Interactive installation (prompts for provider selection)
   ./install.sh
 
-  # Non-interactive with API key
-  NVIDIA_API_KEY=nvapi-xxx ./install.sh --non-interactive
+  # Non-interactive with NVIDIA
+  PROVIDER=nvidia NVIDIA_API_KEY=nvapi-xxx ./install.sh --non-interactive
+
+  # Non-interactive with OpenAI
+  PROVIDER=openai OPENAI_API_KEY=sk-xxx ./install.sh --non-interactive
+
+  # Non-interactive with Anthropic
+  PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-xxx ./install.sh --non-interactive
+
+  # Using --provider flag
+  ./install.sh --provider openai --non-interactive
 
   # Custom sandbox name
   ./install.sh --sandbox-name my-ai-assistant
@@ -98,6 +132,10 @@ parse_args() {
                 NON_INTERACTIVE=1
                 NO_PROMPT=1
                 shift
+                ;;
+            --provider)
+                PROVIDER="$2"
+                shift 2
                 ;;
             --skip-docker)
                 SKIP_DOCKER=1
@@ -134,21 +172,34 @@ parse_args() {
                 ;;
         esac
     done
+    
+    # Validate provider
+    if [[ -z "${PROVIDER_CONFIG[$PROVIDER]:-}" ]]; then
+        ui_error "Unknown provider: $PROVIDER"
+        ui_info "Valid providers: $(get_providers | tr '\n' ' ')"
+        exit 1
+    fi
 }
 
 # Show installation plan
 show_plan() {
     local project_dir="$1"
     
+    local display_name default_model
+    display_name=$(get_provider_display_name "$PROVIDER")
+    default_model=$(get_provider_config "$PROVIDER" "default_model")
+
     ui_section "Installation Plan"
-    
+
     ui_kv "Platform" "$(detect_os) ($(detect_arch))"
+    ui_kv "Provider" "${display_name}"
+    ui_kv "Default Model" "${default_model}"
     ui_kv "Project Dir" "$project_dir"
     ui_kv "Data Dir" "${project_dir}/openclaw-data"
     ui_kv "Sandbox Name" "$SANDBOX_NAME"
     ui_kv "Sandbox Image" "ghcr.io/nvidia/openshell-community/sandboxes/openclaw:latest"
     ui_kv "Gateway Port" "18789"
-    
+
     echo ""
     ui_info "Installation steps:"
     echo "  1. Check system architecture"
@@ -158,22 +209,22 @@ show_plan() {
     echo "  5. Install Docker Desktop (if not present)"
     echo "  6. Install OpenShell CLI"
     echo "  7. Install NemoClaw"
-    echo "  8. Configure NVIDIA API key"
+    echo "  8. Configure ${display_name} API key"
     echo "  9. Create sandbox with volume mounts"
     echo " 10. Verify installation"
-    
+
     if [[ "$SKIP_DOCKER" == "1" ]]; then
         ui_info "Skipping: Docker installation"
     fi
-    
+
     if [[ "$SKIP_NODE" == "1" ]]; then
         ui_info "Skipping: Node.js installation"
     fi
-    
+
     if [[ "$DRY_RUN" == "1" ]]; then
         ui_warn "Dry run mode - no changes will be made"
     fi
-    
+
     echo ""
 }
 
@@ -209,13 +260,16 @@ run_step() {
 main() {
     # Parse command line arguments
     parse_args "$@"
-    
+
     # Set project directory
     PROJECT_DIR="${PROJECT_DIR:-$SCRIPT_DIR}"
-    
+
     # Show banner
     ui_banner "$INSTALLER_VERSION"
     
+    # Export provider for subprocess scripts
+    export PROVIDER
+
     # Show plan
     show_plan "$PROJECT_DIR"
     

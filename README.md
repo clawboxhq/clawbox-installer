@@ -31,6 +31,7 @@ ClawBox makes getting started with NemoClaw and OpenShell **10x easier**. Instea
 | 💾 **Persistent Volume Mounting** | OpenClaw config, credentials, and workspace persist across sandbox restarts |
 | 🎨 **User-Friendly UX** | Colored terminal output, progress indicators, phase-by-phase installation |
 | 🔧 **Non-Interactive Mode** | Automate installations with `--non-interactive` flag |
+| 🤖 **Multi-Provider Support** | NVIDIA, OpenAI, Anthropic, OpenRouter - choose your LLM |
 | 🧪 **Dry-Run Preview** | See what would be installed before making changes |
 | 🧹 **Clean Uninstaller** | Remove everything or keep specific components |
 | 📦 **GitHub Pages Distribution** | Install directly via `curl` without cloning |
@@ -64,11 +65,51 @@ cd clawbox-installer
 ### Non-Interactive Installation
 
 ```bash
-# Set API key and run without prompts
-NVIDIA_API_KEY=nvapi-xxx ./install.sh --non-interactive
+# NVIDIA (default)
+PROVIDER=nvidia NVIDIA_API_KEY=nvapi-xxx ./install.sh --non-interactive
+
+# OpenAI
+PROVIDER=openai OPENAI_API_KEY=sk-xxx ./install.sh --non-interactive
+
+# Anthropic
+PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-xxx ./install.sh --non-interactive
+
+# OpenRouter
+PROVIDER=openrouter OPENROUTER_API_KEY=sk-or-xxx ./install.sh --non-interactive
+
+# Or use --provider flag
+./install.sh --provider openai --non-interactive
 
 # Custom sandbox name
 ./install.sh --sandbox-name my-ai-assistant
+```
+
+---
+
+## Supported LLM Providers
+
+ClawBox supports multiple LLM providers out of the box:
+
+| Provider | API Key Env | Default Model | Get API Key |
+|----------|-------------|---------------|-------------|
+| **NVIDIA** (default) | `NVIDIA_API_KEY` | `nemotron-3-super-120b-a12b` | [Get Key](https://build.nvidia.com/settings/api-keys) |
+| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o` | [Get Key](https://platform.openai.com/api-keys) |
+| **Anthropic** | `ANTHROPIC_API_KEY` | `claude-sonnet-4-20250514` | [Get Key](https://console.anthropic.com/settings/keys) |
+| **OpenRouter** | `OPENROUTER_API_KEY` | `anthropic/claude-sonnet-4` | [Get Key](https://openrouter.ai/keys) |
+
+### Interactive Provider Selection
+
+When running interactively, ClawBox will prompt you to select a provider:
+
+```
+Available providers:
+
+  1) NVIDIA (NIM API) - nemotron-3-super-120b-a12b
+  2) OpenAI - gpt-4o
+  3) Anthropic - claude-sonnet-4-20250514
+  4) OpenRouter - anthropic/claude-sonnet-4
+
+Select provider [1-4] (default: 1):
 ```
 
 ---
@@ -106,7 +147,8 @@ NVIDIA_API_KEY=nvapi-xxx ./install.sh --non-interactive
 
 ```
 Options:
-  --non-interactive    Run without prompts (requires NVIDIA_API_KEY env)
+  --non-interactive    Run without prompts (requires PROVIDER_API_KEY env)
+  --provider PROVIDER  LLM provider: nvidia, openai, anthropic, openrouter
   --skip-docker        Skip Docker installation (use existing)
   --skip-node          Skip Node.js installation (use existing)
   --sandbox-name NAME  Custom sandbox name (default: my-assistant)
@@ -182,17 +224,44 @@ http://127.0.0.1:18789
 
 ## Configuration
 
-### NVIDIA API Key
+### LLM Provider Configuration
 
-Get your API key from: https://build.nvidia.com/settings/api-keys
+ClawBox supports multiple LLM providers. Configure via environment variables:
 
 ```bash
-# Set in environment
+# NVIDIA (default)
+export PROVIDER=nvidia
 export NVIDIA_API_KEY=nvapi-xxx
 
-# Or add to config/.env
-echo "NVIDIA_API_KEY=nvapi-xxx" >> config/.env
+# OpenAI
+export PROVIDER=openai
+export OPENAI_API_KEY=sk-xxx
+
+# Anthropic
+export PROVIDER=anthropic
+export ANTHROPIC_API_KEY=sk-ant-xxx
+
+# OpenRouter
+export PROVIDER=openrouter
+export OPENROUTER_API_KEY=sk-or-xxx
 ```
+
+Or add to `config/.env`:
+
+```bash
+# config/.env
+PROVIDER=nvidia
+NVIDIA_API_KEY=nvapi-xxx
+```
+
+### Provider-Specific URLs
+
+| Provider | Get API Key | Documentation |
+|----------|-------------|---------------|
+| NVIDIA | https://build.nvidia.com/settings/api-keys | [NVIDIA NIM API](https://build.nvidia.com) |
+| OpenAI | https://platform.openai.com/api-keys | [OpenAI API](https://platform.openai.com/docs) |
+| Anthropic | https://console.anthropic.com/settings/keys | [Anthropic API](https://docs.anthropic.com) |
+| OpenRouter | https://openrouter.ai/keys | [OpenRouter](https://openrouter.ai/docs) |
 
 ---
 
