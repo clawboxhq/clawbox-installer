@@ -1,136 +1,77 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 ClawBox Contributors. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Makefile for ClawBox
+# ClawBox Build Configuration
 
-.PHONY: all install uninstall check clean test lint help
+BINARY_NAME=clawbox
+VERSION=0.2.0
+GIT_COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+GOOS=$(shell go env GOOS)
+GOARCH=$(shell go env GOARCH)
 
-# Default target
-all: check
+LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildDate=$(BUILD_DATE)"
 
-# Installation targets
-install: ## Run the full installer
-	@./install.sh
+.PHONY: all build install clean test lint completions help
 
-install-non-interactive: ## Run non-interactive installation (requires NVIDIA_API_KEY)
-	@NVIDIA_API_KEY=${NVIDIA_API_KEY} ./install.sh --non-interactive
+all: build
 
-install-dry-run: ## Show what would be installed without making changes
-	@./install.sh --dry-run
+build:
+	go build $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/clawbox
 
-# Uninstallation
-uninstall: ## Run the uninstaller
-	@./uninstall.sh
+build-all:
+	GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o bin/clawbox-darwin-arm64 ./cmd/clawbox
+	GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o bin/clawbox-darwin-amd64 ./cmd/clawbox
+	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/clawbox-linux-arm64 ./cmd/clawbox
+	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o bin/clawbox-linux-amd64 ./cmd/clawbox
 
-uninstall-force: ## Force uninstall without prompts
-	@./uninstall.sh --yes
+install: build
+	install -m 755 bin/$(BINARY_NAME) /usr/local/bin/
 
-# Verification
-check: ## Check all scripts are executable
-	@echo "Checking scripts..."
-	@for f in scripts/*.sh; do \
-		if [ ! -x "$$f" ]; then \
-			echo "Making $$f executable"; \
-			chmod +x "$$f"; \
-		fi; \
-	done
-	@chmod +x install.sh uninstall.sh
-	@echo "✓ All scripts are executable"
+install-local: build
+	mkdir -p $(HOME)/.local/bin
+	install -m 755 bin/$(BINARY_NAME) $(HOME)/.local/bin/
 
-verify: ## Verify the installation (run after install)
-	@./scripts/10-verify-installation.sh
+test:
+	go test -v ./...
 
-# Testing
-test: check ## Run basic tests
-	@echo "Running tests..."
-	@./scripts/01-check-architecture.sh && echo "✓ Architecture check passed" || echo "✗ Architecture check failed"
-	@./scripts/02-check-prerequisites.sh && echo "✓ Prerequisites check passed" || echo "✗ Prerequisites check failed"
+lint:
+	go fmt ./...
+	go vet ./...
 
-# Linting
-lint: ## Check shell scripts for issues
-	@echo "Linting shell scripts..."
-	@if command -v shellcheck >/dev/null 2>&1; then \
-		shellcheck lib/*.sh scripts/*.sh install.sh uninstall.sh; \
-	else \
-		echo "shellcheck not installed, skipping"; \
-	fi
+completions:
+	mkdir -p completions
+	./bin/$(BINARY_NAME) completion bash > completions/clawbox.bash
+	./bin/$(BINARY_NAME) completion zsh > completions/clawbox.zsh
+	./bin/$(BINARY_NAME) completion fish > completions/clawbox.fish
 
-# Formatting
-format: ## Format shell scripts
-	@echo "Formatting shell scripts..."
-	@if command -v shfmt >/dev/null 2>&1; then \
-		shfmt -w lib/*.sh scripts/*.sh install.sh uninstall.sh; \
-	else \
-		echo "shfmt not installed, skipping"; \
-	fi
+clean:
+	rm -rf bin/
+	rm -f completions/*.bash completions/*.zsh completions/*.fish
 
-# Cleanup
-clean: ## Clean up generated files
-	@echo "Cleaning up..."
-	@rm -f *.log *.tmp
-	@rm -rf /tmp/nemoclaw-*
-	@echo "✓ Clean complete"
+mod:
+	go mod tidy
+	go mod download
 
-# Docker cleanup
-docker-clean: ## Clean Docker resources
-	@echo "Cleaning Docker resources..."
-	@docker system prune -f 2>/dev/null || true
-	@docker volume prune -f 2>/dev/null || true
-	@echo "✓ Docker clean complete"
+run:
+	go run ./cmd/clawbox
 
-# Sandbox management
-sandbox-status: ## Check sandbox status
-	@openshell sandbox list 2>/dev/null || echo "OpenShell not available"
+version:
+	@echo "clawbox version $(VERSION)"
+	@echo "  Platform: $(GOOS)/$(GOARCH)"
+	@echo "  Git: $(GIT_COMMIT)"
+	@echo "  Built: $(BUILD_DATE)"
 
-sandbox-connect: ## Connect to sandbox
-	@nemoclaw my-assistant connect
-
-sandbox-logs: ## View sandbox logs
-	@nemoclaw my-assistant logs --follow
-
-# Gateway management
-gateway-status: ## Check OpenShell gateway status
-	@openshell gateway status 2>/dev/null || echo "Gateway not running"
-
-gateway-start: ## Start OpenShell gateway
-	@openshell gateway start
-
-gateway-stop: ## Stop OpenShell gateway
-	@openshell gateway stop
-
-# Data management
-backup: ## Backup OpenClaw data
-	@tar -czf openclaw-backup-$$(date +%Y%m%d-%H%M%S).tar.gz openclaw-data/
-	@echo "✓ Backup created"
-
-restore: ## Restore from backup (usage: make restore BACKUP=file.tar.gz)
-ifndef BACKUP
-	@echo "Usage: make restore BACKUP=file.tar.gz"
-	@exit 1
-endif
-	@tar -xzf $(BACKUP)
-	@echo "✓ Restored from $(BACKUP)"
-
-# Development
-dev-setup: check ## Setup development environment
-	@echo "Setting up development environment..."
-	@if command -v brew >/dev/null 2>&1; then \
-		brew install shellcheck shfmt; \
-	fi
-	@echo "✓ Development environment ready"
-
-# Help
-help: ## Show this help message
-	@echo "ClawBox - Secure AI Assistant in a Box"
+help:
+	@echo "ClawBox Build System"
 	@echo ""
-	@echo "Usage: make [target]"
-	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@echo ""
-	@echo "Examples:"
-	@echo "  make install              # Run full installation"
-	@echo "  make uninstall            # Remove everything"
-	@echo "  make check                # Verify scripts"
-	@echo "  make test                 # Run tests"
-	@echo "  make help                 # Show this help"
+	@echo "Targets:"
+	@echo "  build          Build binary for current platform"
+	@echo "  build-all      Build binaries for all platforms"
+	@echo "  install        Install to /usr/local/bin (requires sudo)"
+	@echo "  install-local  Install to ~/.local/bin"
+	@echo "  test           Run tests"
+	@echo "  lint           Run linters"
+	@echo "  completions    Generate shell completions"
+	@echo "  clean          Remove build artifacts"
+	@echo "  mod            Download and tidy modules"
+	@echo "  run            Run without building"
+	@echo "  version        Show version info"
+	@echo "  help           Show this help"

@@ -1,8 +1,0 @@
-{
-  "name": "ClawBox",
-  "description": "Secure AI Assistant in a Box - One-click cross-platform installer for OpenShell + NemoClaw + OpenClaw",
-  "url": "https://clawboxhq.github.io/clawbox-installer",
-  "repository": "https://github.com/clawboxhq/clawbox-installer",
-  "version": "0.1.0",
-  "license": "Apache-2.0"
-}
