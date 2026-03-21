@@ -75,6 +75,7 @@ var providerAddCmd = &cobra.Command{
 		endpoint, _ := cmd.Flags().GetString("endpoint")
 		apiKey, _ := cmd.Flags().GetString("api-key")
 		model, _ := cmd.Flags().GetString("model")
+		sync, _ := cmd.Flags().GetBool("sync")
 
 		config, err := loadConfig()
 		if err != nil {
@@ -102,7 +103,7 @@ var providerAddCmd = &cobra.Command{
 			config.Providers = make(map[string]provider.Provider)
 		}
 
-		config.Providers[name] = provider.Provider{
+		newProvider := provider.Provider{
 			Name:         name,
 			Type:         pt,
 			Endpoint:     endpoint,
@@ -110,12 +111,25 @@ var providerAddCmd = &cobra.Command{
 			DefaultModel: model,
 		}
 
+		config.Providers[name] = newProvider
+
 		if config.DefaultProvider == "" {
 			config.DefaultProvider = name
 		}
 
 		if err := saveConfig(config); err != nil {
 			return err
+		}
+
+		// Sync to OpenShell by default (unless --no-sync)
+		if sync {
+			fmt.Printf("Syncing provider '%s' to OpenShell...\n", name)
+			if err := provider.SyncToOpenShell(&newProvider); err != nil {
+				fmt.Printf("Warning: Failed to sync to OpenShell: %v\n", err)
+				fmt.Printf("Provider saved locally. Run 'clawbox provider sync %s' to retry.\n", name)
+			} else {
+				fmt.Printf("Provider '%s' synced to OpenShell\n", name)
+			}
 		}
 
 		fmt.Printf("Provider '%s' added successfully\n", name)
@@ -129,6 +143,7 @@ var providerRemoveCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
+		sync, _ := cmd.Flags().GetBool("sync")
 
 		config, err := loadConfig()
 		if err != nil {
@@ -137,6 +152,14 @@ var providerRemoveCmd = &cobra.Command{
 
 		if _, ok := config.Providers[name]; !ok {
 			return fmt.Errorf("provider '%s' not found", name)
+		}
+
+		// Delete from OpenShell first
+		if sync {
+			fmt.Printf("Removing provider '%s' from OpenShell...\n", name)
+			if err := provider.DeleteFromOpenShell(name); err != nil {
+				fmt.Printf("Warning: Failed to delete from OpenShell: %v\n", err)
+			}
 		}
 
 		delete(config.Providers, name)
@@ -252,12 +275,42 @@ var providerTypesCmd = &cobra.Command{
 	},
 }
 
+var providerSyncCmd = &cobra.Command{
+	Use:   "sync <name>",
+	Short: "Sync provider to OpenShell",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name := args[0]
+
+		config, err := loadConfig()
+		if err != nil {
+			return err
+		}
+
+		p, ok := config.Providers[name]
+		if !ok {
+			return fmt.Errorf("provider '%s' not found", name)
+		}
+
+		fmt.Printf("Syncing provider '%s' to OpenShell...\n", name)
+		if err := provider.SyncToOpenShell(&p); err != nil {
+			return fmt.Errorf("failed to sync: %w", err)
+		}
+
+		fmt.Printf("Provider '%s' synced successfully\n", name)
+		return nil
+	},
+}
+
 func init() {
 	providerAddCmd.Flags().String("type", "", "Provider type (required)")
 	providerAddCmd.Flags().String("endpoint", "", "Custom endpoint URL")
 	providerAddCmd.Flags().String("api-key", "", "API key")
 	providerAddCmd.Flags().String("model", "", "Default model")
+	providerAddCmd.Flags().Bool("sync", true, "Sync to OpenShell immediately")
 	providerAddCmd.MarkFlagRequired("type")
+
+	providerRemoveCmd.Flags().Bool("sync", true, "Remove from OpenShell as well")
 
 	providerCmd.AddCommand(providerListCmd)
 	providerCmd.AddCommand(providerAddCmd)
@@ -265,6 +318,7 @@ func init() {
 	providerCmd.AddCommand(providerDefaultCmd)
 	providerCmd.AddCommand(providerTestCmd)
 	providerCmd.AddCommand(providerTypesCmd)
+	providerCmd.AddCommand(providerSyncCmd)
 
 	rootCmd.AddCommand(providerCmd)
 }

@@ -103,8 +103,10 @@ type Config struct {
 }
 
 type SandboxConfig struct {
-	Name     string `json:"name"`
-	Provider string `json:"provider"`
-	Model    string `json:"model"`
-	Port     int    `json:"port"`
+	Name           string   `json:"name"`
+	Provider       string   `json:"provider"`
+	Model          string   `json:"model"`
+	Port           int      `json:"port"`
+	Policies       []string `json:"policies,omitempty"`
+	CustomPolicies []string `json:"customPolicies,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"text/tabwriter"
 
+	"github.com/clawboxhq/clawbox-installer/internal/provider"
 	"github.com/spf13/cobra"
 )
 
@@ -148,6 +149,23 @@ var sandboxStartCmd = &cobra.Command{
 		if isSandboxRunning(name) {
 			fmt.Printf("Sandbox '%s' is already running\n", name)
 			return nil
+		}
+
+		// Sync provider to OpenShell before starting sandbox
+		prov, ok := config.Providers[sandbox.Provider]
+		if !ok {
+			return fmt.Errorf("provider '%s' not found in config", sandbox.Provider)
+		}
+
+		fmt.Printf("Syncing provider '%s' to OpenShell...\n", sandbox.Provider)
+		if err := provider.SyncToOpenShell(&prov); err != nil {
+			return fmt.Errorf("failed to sync provider: %w", err)
+		}
+
+		// Set inference route
+		fmt.Printf("Setting inference to model '%s'...\n", sandbox.Model)
+		if err := provider.SetInference(sandbox.Provider, sandbox.Model); err != nil {
+			return fmt.Errorf("failed to set inference: %w", err)
 		}
 
 		fmt.Printf("Starting sandbox '%s'...\n", name)
