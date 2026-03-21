@@ -2,11 +2,11 @@
 
 **Secure AI Assistant in a Box**
 
-Cross-platform CLI for deploying OpenShell + NemoClaw + OpenClaw with secure sandboxing and persistent volume mounting.
+Cross-platform CLI for deploying OpenShell + NemoClaw + OpenClaw with secure sandboxing, persistent volume mounting, and network policy management.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20WSL2-success.svg)]()
-[![Version](https://img.shields.io/badge/Version-0.2.0--beta-orange.svg)]()
+[![Version](https://img.shields.io/badge/Version-0.3.0--beta-orange.svg)]()
 
 ---
 
@@ -16,7 +16,9 @@ Cross-platform CLI for deploying OpenShell + NemoClaw + OpenClaw with secure san
 
 ```bash
 # macOS/Linux
-curl -fsSL https://clawboxhq.github.io/clawbox-installer/install.sh | bash
+curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v0.3.0/clawbox-0.3.0-darwin-arm64 -o clawbox
+chmod +x clawbox
+sudo mv clawbox /usr/local/bin/
 ```
 
 ### Manual Build
@@ -44,7 +46,10 @@ clawbox [command] [flags]
 | `uninstall` | Remove ClawBox installation |
 | `sandbox` | Manage OpenShell sandboxes |
 | `provider` | Manage LLM providers |
+| `policy` | Manage network policies |
+| `inference` | Manage inference routing |
 | `config` | Manage configuration |
+| `monitor` | Open TUI monitoring dashboard |
 | `status` | Show system status |
 | `doctor` | Run diagnostics and health checks |
 | `update` | Update ClawBox components |
@@ -72,6 +77,71 @@ clawbox [command] [flags]
 | llama.cpp | `local-model` | `http://localhost:8080` |
 | vLLM | `local-model` | `http://localhost:8000` |
 | Custom | (configurable) | (configurable) |
+
+---
+
+## Network Policies
+
+Control which endpoints your sandbox can reach. By default, all unlisted endpoints are blocked.
+
+### Built-in Presets
+
+| Preset | Description |
+|--------|-------------|
+| `discord` | Discord API, gateway, and CDN |
+| `docker` | Docker Hub and NVIDIA container registry |
+| `github` | GitHub API and webhooks |
+| `huggingface` | Hugging Face Hub, LFS, and Inference API |
+| `jira` | Jira and Atlassian Cloud |
+| `npm` | npm and Yarn registry |
+| `outlook` | Microsoft Outlook and Graph API |
+| `pypi` | Python Package Index |
+| `slack` | Slack API and webhooks |
+| `telegram` | Telegram Bot API |
+
+### Policy Commands
+
+```bash
+# List available presets
+clawbox policy presets
+
+# Apply a preset to a sandbox
+clawbox policy add my-assistant github
+
+# List applied policies
+clawbox policy list my-assistant
+
+# Show full policy YAML
+clawbox policy show my-assistant
+
+# Edit policy (pull/edit/push workflow)
+clawbox policy edit my-assistant
+
+# Add custom endpoint
+clawbox policy custom my-assistant --host api.company.com --port 443
+```
+
+---
+
+## Inference Routing
+
+Switch providers and models at runtime without restarting sandboxes.
+
+### Inference Commands
+
+```bash
+# Switch to different provider/model
+clawbox inference set my-assistant --provider openai --model gpt-4o
+
+# Show current inference configuration
+clawbox inference status my-assistant
+
+# List common models
+clawbox inference models
+
+# List available models for a provider
+clawbox inference list-models openai
+```
 
 ---
 
@@ -105,6 +175,9 @@ clawbox provider add my-openai --type openai --api-key sk-xxx
 # Add local provider
 clawbox provider add my-ollama --type ollama --endpoint http://localhost:11434
 
+# Sync provider to OpenShell
+clawbox provider sync my-openai
+
 # Test connection
 clawbox provider test my-ollama
 
@@ -132,10 +205,13 @@ clawbox sandbox connect dev
 clawbox sandbox logs dev --follow
 ```
 
-### Diagnostics
+### Monitoring
 
 ```bash
-# Run all checks
+# Open TUI monitoring dashboard
+clawbox monitor
+
+# Run diagnostics
 clawbox doctor
 
 # Verbose output
@@ -192,7 +268,8 @@ Configuration is stored in JSON format at `~/.clawbox/config.json`.
       "name": "my-assistant",
       "provider": "ollama",
       "model": "llama3.2",
-      "port": 18789
+      "port": 18789,
+      "policies": ["github", "slack"]
     }
   ],
   "containerRuntime": "docker"
@@ -253,7 +330,8 @@ clawbox/
 ├── cmd/clawbox/           # CLI entry point
 │   └── cmd/               # Command implementations
 ├── internal/              # Internal packages
-│   └── provider/          # Provider system
+│   ├── provider/          # Provider system
+│   └── policy/            # Policy management
 ├── completions/           # Shell completions
 ├── go.mod                 # Go module definition
 ├── go.sum                 # Dependency checksums
@@ -273,3 +351,4 @@ Apache License 2.0 - See [LICENSE](LICENSE) file for details.
 - **Issues**: https://github.com/clawboxhq/clawbox-installer/issues
 - **Discord**: https://discord.gg/XFpfPv9Uvx
 - **OpenClaw Docs**: https://docs.openclaw.ai
+- **NemoClaw Docs**: https://docs.nvidia.com/nemoclaw/
