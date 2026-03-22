@@ -1,88 +1,115 @@
 # Download ClawBox
 
-ClawBox is a secure AI assistant that runs entirely on your machine. Choose your platform below for installation instructions.
+ClawBox is a secure AI assistant that runs entirely on your machine. Choose your platform for easy installation.
 
 ---
 
-## One-Click Install
+## Easy Install (Recommended for Most Users)
 
 === "macOS"
 
-    Open Terminal and run:
-
-    ```bash
-    curl -fsSL https://clawbox.ai/install.sh | bash
-    ```
-
-    **Manual Download:**
+    ### Option 1: DMG Installer (Easiest)
     
-    | Architecture | Download |
-    |--------------|----------|
-    | Apple Silicon (M1/M2/M3/M4) | [clawbox-darwin-arm64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-darwin-arm64) |
-    | Intel | [clawbox-darwin-amd64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-darwin-amd64) |
-
-    After downloading:
-    ```bash
-    chmod +x clawbox-*
-    sudo mv clawbox-* /usr/local/bin/clawbox
-    ```
-
-=== "Linux"
-
-    Open Terminal and run:
-
-    ```bash
-    curl -fsSL https://clawbox.ai/install.sh | bash
-    ```
-
-    **Manual Download:**
+    1. Download the DMG for your Mac:
+       - [ClawBox for Apple Silicon (M1/M2/M3/M4)](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-0.4.0-macos-arm64.dmg)
+       - [ClawBox for Intel Mac](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-0.4.0-macos-amd64.dmg)
     
-    | Architecture | Download |
-    |--------------|----------|
-    | ARM64 | [clawbox-linux-arm64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-linux-arm64) |
-    | x86_64 | [clawbox-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-linux-amd64) |
-
-    After downloading:
-    ```bash
-    chmod +x clawbox-*
-    sudo mv clawbox-* /usr/local/bin/clawbox
-    ```
-
-    **Package Install:**
+    2. **Double-click** the downloaded `.dmg` file
     
-    Debian/Ubuntu:
-    ```bash
-    sudo apt install ./clawbox_0.4.0_amd64.deb
-    ```
+    3. **Drag** ClawBox.app to the Applications folder
     
-    RHEL/Fedora:
+    4. **Open** Applications and double-click ClawBox
+    
+    !!! warning "Security Warning"
+        If you see "unidentified developer" warning:
+        
+        - Right-click (or Control-click) ClawBox.app
+        - Select **Open** from the menu
+        - Click **Open** in the dialog
+    
+    ---
+    
+    ### Option 2: Terminal Install
+    
     ```bash
-    sudo rpm -i clawbox-0.4.0.x86_64.rpm
+    curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/latest/download/install.sh | bash
     ```
 
 === "Windows"
 
-    Open PowerShell and run:
-
+    ### Option 1: Windows Installer (Easiest)
+    
+    1. [Download ClawBox Setup](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-Setup-0.4.0.exe)
+    
+    2. **Double-click** the downloaded `.exe` file
+    
+    3. Follow the setup wizard:
+       - Accept the license
+       - Choose install location
+       - Click **Install**
+    
+    !!! warning "Windows Defender Warning"
+        You may see a SmartScreen warning. Click **"Run anyway"** to proceed.
+    
+    ---
+    
+    ### Option 2: PowerShell Install
+    
     ```powershell
-    iex (irm https://clawbox.ai/install.ps1)
+    iex (irm https://github.com/clawboxhq/clawbox-installer/releases/latest/download/install.ps1)
     ```
 
-    **Manual Download:**
-    
-    | Architecture | Download |
-    |--------------|----------|
-    | x86_64 | [clawbox-windows-amd64.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-windows-amd64.exe) |
-    | ARM64 | [clawbox-windows-arm64.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-windows-arm64.exe) |
+=== "Linux"
 
-    After downloading, add to PATH:
-    ```powershell
-    # Move to a directory in PATH
-    Move-Item clawbox-*.exe $env:LOCALAPPDATA\ClawBox\clawbox.exe
+    ### Option 1: Package Manager (Easiest)
     
-    # Add to PATH (permanent)
-    [Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:LOCALAPPDATA\ClawBox", "User")
+    **Debian/Ubuntu:**
+    
+    1. [Download .deb package](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox_0.4.0_amd64.deb)
+    
+    2. **Double-click** the `.deb` file
+    
+    3. Click **Install** in Software Center
+    
+    Or via terminal:
+    ```bash
+    sudo apt install ./clawbox_0.4.0_amd64.deb
     ```
+    
+    ---
+    
+    **Fedora/RHEL:**
+    
+    1. [Download .rpm package](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-1.x86_64.rpm)
+    
+    2. **Double-click** the `.rpm` file
+    
+    Or via terminal:
+    ```bash
+    sudo dnf install ./clawbox-0.4.0-1.x86_64.rpm
+    ```
+    
+    ---
+    
+    ### Option 2: Terminal Install
+    
+    ```bash
+    curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/latest/download/install.sh | bash
+    ```
+
+---
+
+## All Downloads
+
+| Platform | Easy Install | Binary Only | Checksum |
+|----------|--------------|-------------|----------|
+| macOS (Apple Silicon) | [ClawBox-0.4.0-macos-arm64.dmg](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-0.4.0-macos-arm64.dmg) | [clawbox-0.4.0-darwin-arm64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-darwin-arm64) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| macOS (Intel) | [ClawBox-0.4.0-macos-amd64.dmg](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-0.4.0-macos-amd64.dmg) | [clawbox-0.4.0-darwin-amd64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-darwin-amd64) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| Windows (x64) | [ClawBox-Setup-0.4.0.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-Setup-0.4.0.exe) | [clawbox-0.4.0-windows-amd64.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-windows-amd64.exe) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| Windows (ARM64) | [ClawBox-Setup-0.4.0.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/ClawBox-Setup-0.4.0.exe) | [clawbox-0.4.0-windows-arm64.exe](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-windows-arm64.exe) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| Linux (Debian x64) | [clawbox_0.4.0_amd64.deb](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox_0.4.0_amd64.deb) | [clawbox-0.4.0-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-linux-amd64) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| Linux (Debian ARM64) | [clawbox_0.4.0_arm64.deb](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox_0.4.0_arm64.deb) | [clawbox-0.4.0-linux-arm64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-linux-arm64) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
+| Linux (Fedora x64) | [clawbox-0.4.0-1.x86_64.rpm](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-1.x86_64.rpm) | [clawbox-0.4.0-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/clawbox-0.4.0-linux-amd64) | [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/latest/download/checksums.txt) |
 
 ---
 
@@ -91,7 +118,7 @@ ClawBox is a secure AI assistant that runs entirely on your machine. Choose your
 | Platform | Requirements |
 |----------|--------------|
 | macOS | macOS 11+ (Big Sur or later) |
-| Linux | glibc 2.31+ (most modern distributions) |
+| Linux | glibc 2.31+ (Ubuntu 20.04+, Debian 11+, Fedora 34+) |
 | Windows | Windows 10+ or Windows Server 2019+ |
 
 **Hardware:**
@@ -109,7 +136,7 @@ After installation, verify ClawBox is working:
 clawbox version
 ```
 
-You should see output like:
+You should see:
 ```
 clawbox version 0.4.0
 ```
@@ -118,37 +145,48 @@ clawbox version 0.4.0
 
 ## Next Steps
 
-1. Run `clawbox install` to set up your AI environment
-2. Follow the interactive setup wizard
-3. Start using ClawBox with `clawbox chat`
+1. **Run** `clawbox install` to set up your AI environment
+2. **Follow** the interactive setup wizard
+3. **Start** using ClawBox with `clawbox chat`
 
 ---
 
 ## Troubleshooting
 
-### "command not found" after install
+### macOS: "App is damaged and can't be opened"
 
-**macOS/Linux:**
+This is Gatekeeper blocking unsigned apps. Fix:
+
 ```bash
-source ~/.zshrc   # or ~/.bashrc
+xattr -cr /Applications/ClawBox.app
 ```
 
-**Windows:**
-Open a new PowerShell window.
+Then open the app again.
 
-### Permission denied (macOS/Linux)
+### macOS: "unidentified developer" warning
 
-Run with sudo for system-wide install:
+1. Right-click (Control-click) ClawBox.app
+2. Select **Open** from the menu
+3. Click **Open** in the dialog
+
+### Windows: "Windows protected your PC"
+
+1. Click **More info**
+2. Click **Run anyway**
+
+### Windows: "Command not found" after install
+
+1. Open a new PowerShell window
+2. Or restart your computer
+
+### Linux: "command not found" after install
+
 ```bash
-curl -fsSL https://clawbox.ai/install.sh | sudo bash
+source ~/.bashrc   # or ~/.zshrc
 ```
-
-### Windows security warning
-
-Click "More info" → "Run anyway" when prompted by Windows Defender.
 
 ---
 
-## All Downloads
+## Previous Releases
 
-See all releases and checksums on [GitHub Releases](https://github.com/clawboxhq/clawbox-installer/releases).
+See all releases on [GitHub Releases](https://github.com/clawboxhq/clawbox-installer/releases).

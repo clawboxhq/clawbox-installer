@@ -7,14 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.2.0)'
+        description: 'Version to release (e.g., 0.4.0)'
         required: false
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-binaries:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -46,52 +46,211 @@ jobs:
         run: |
           mkdir -p dist
 
+          # macOS
           GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-darwin-arm64 ./cmd/clawbox
           GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-darwin-amd64 ./cmd/clawbox
+
+          # Linux
           GOOS=linux GOARCH=arm64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-linux-arm64 ./cmd/clawbox
           GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-linux-amd64 ./cmd/clawbox
+
+          # Windows
           GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-windows-amd64.exe ./cmd/clawbox
           GOOS=windows GOARCH=arm64 go build -ldflags "-X main.Version=$VERSION -X main.GitCommit=$GIT_COMMIT -X main.BuildDate=$BUILD_DATE" -o dist/clawbox-$VERSION-windows-arm64.exe ./cmd/clawbox
 
-          cp packaging/install.sh dist/install.sh
-          cp packaging/install.ps1 dist/install.ps1
-
           cd dist && sha256sum * > checksums.txt
 
-      - name: Upload artifacts
+      - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: dist/*
 
+  build-macos-dmg:
+    needs: build-binaries
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create DMG (Apple Silicon)
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          chmod +x packaging/macos/create-dmg.sh
+          cd clawbox
+          cp dist/clawbox-$VERSION-darwin-arm64 clawbox-$VERSION-darwin-arm64
+          ./packaging/macos/create-dmg.sh $VERSION arm64
+          mv ClawBox-$VERSION-macos-arm64.dmg dist/
+
+      - name: Create DMG (Intel)
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          cd clawbox
+          cp dist/clawbox-$VERSION-darwin-amd64 clawbox-$VERSION-darwin-amd64
+          ./packaging/macos/create-dmg.sh $VERSION amd64
+          mv ClawBox-$VERSION-macos-amd64.dmg dist/
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist/*.dmg
+
+  build-windows-installer:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Install NSIS
+        run: sudo apt-get install -y nsis
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Windows installer
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          chmod +x packaging/windows/build-installer.sh
+          cd clawbox
+          cp dist/clawbox-$VERSION-windows-amd64.exe . || true
+          ./packaging/windows/build-installer.sh $VERSION amd64
+          mv ClawBox-Setup-$VERSION.exe dist/ClawBox-Setup-$VERSION-amd64.exe || true
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+
+  build-linux-packages:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install rpm tools
+        run: sudo apt-get install -y rpm
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Linux packages (amd64)
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          chmod +x packaging/linux/build-packages.sh
+          cd clawbox
+          cp dist/clawbox-$VERSION-linux-amd64 clawbox-$VERSION-linux-amd64 || true
+          ./packaging/linux/build-packages.sh $VERSION amd64
+          mv clawbox_${VERSION}_amd64.deb dist/ 2>/dev/null || true
+          mv clawbox-${VERSION}*.rpm dist/ 2>/dev/null || true
+
+      - name: Build Linux packages (arm64)
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          cd clawbox
+          cp dist/clawbox-$VERSION-linux-arm64 clawbox-$VERSION-linux-arm64 || true
+          ./packaging/linux/build-packages.sh $VERSION arm64
+          mv clawbox_${VERSION}_arm64.deb dist/ 2>/dev/null || true
+          mv clawbox-${VERSION}*.rpm dist/ 2>/dev/null || true
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            dist/*.deb
+            dist/*.rpm
+
   release:
-    needs: build
+    needs: [build-binaries, build-macos-dmg, build-windows-installer, build-linux-packages]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: binaries
-          path: dist
+          path: artifacts
 
-      - name: List files
-        run: ls -la dist/
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.dmg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "clawbox-*" -o -name "install.*" -o -name "checksums.txt" \) -exec cp {} release/ \;
+          ls -la release/
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Prepare release notes
         env:
-          VERSION: ${{ needs.build.outputs.version }}
-        run: |
-          sed "s/\${VERSION}/${VERSION}/g" .github/release-template.md > /tmp/release-notes.md
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: sed "s/\${VERSION}/${VERSION}/g" .github/release-template.md > /tmp/release-notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ClawBox v${{ needs.build.outputs.version }}
+          name: ClawBox v${{ steps.version.outputs.VERSION }}
           body_path: /tmp/release-notes.md
-          files: dist/*
+          files: release/*
           draft: false
-          prerelease: ${{ contains(needs.build.outputs.version, '-') }}
+          prerelease: ${{ contains(steps.version.outputs.VERSION, '-') }}

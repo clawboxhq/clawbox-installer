@@ -1,6 +1,52 @@
 ## ClawBox v${VERSION}
 
-### One-Click Installation
+### Easy Installation (Recommended)
+
+**macOS:**
+- Download `.dmg` → Double-click → Drag to Applications
+- [Apple Silicon (M1/M2/M3/M4)](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-${VERSION}-macos-arm64.dmg)
+- [Intel Mac](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-${VERSION}-macos-amd64.dmg)
+
+**Windows:**
+- Download `.exe` → Double-click → Follow setup wizard
+- [Windows Installer](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-Setup-${VERSION}.exe)
+
+**Linux:**
+- Download `.deb` or `.rpm` → Double-click → Install
+- [Debian/Ubuntu (.deb)](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox_${VERSION}_amd64.deb)
+- [Fedora/RHEL (.rpm)](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-1.x86_64.rpm)
+
+---
+
+### All Downloads
+
+#### macOS
+| Type | Architecture | Download |
+|------|--------------|----------|
+| DMG Installer | Apple Silicon (M1/M2/M3/M4) | [ClawBox-${VERSION}-macos-arm64.dmg](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-${VERSION}-macos-arm64.dmg) |
+| DMG Installer | Intel | [ClawBox-${VERSION}-macos-amd64.dmg](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-${VERSION}-macos-amd64.dmg) |
+| Binary | Apple Silicon | [clawbox-${VERSION}-darwin-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-darwin-arm64) |
+| Binary | Intel | [clawbox-${VERSION}-darwin-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-darwin-amd64) |
+
+#### Windows
+| Type | Architecture | Download |
+|------|--------------|----------|
+| Installer | x64 | [ClawBox-Setup-${VERSION}.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/ClawBox-Setup-${VERSION}.exe) |
+| Binary | x64 | [clawbox-${VERSION}-windows-amd64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-windows-amd64.exe) |
+| Binary | ARM64 | [clawbox-${VERSION}-windows-arm64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-windows-arm64.exe) |
+
+#### Linux
+| Type | Distribution | Download |
+|------|--------------|----------|
+| .deb Package | Debian/Ubuntu (x64) | [clawbox_${VERSION}_amd64.deb](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox_${VERSION}_amd64.deb) |
+| .deb Package | Debian/Ubuntu (ARM64) | [clawbox_${VERSION}_arm64.deb](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox_${VERSION}_arm64.deb) |
+| .rpm Package | Fedora/RHEL (x64) | [clawbox-${VERSION}-1.x86_64.rpm](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-1.x86_64.rpm) |
+| Binary | x64 | [clawbox-${VERSION}-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-linux-amd64) |
+| Binary | ARM64 | [clawbox-${VERSION}-linux-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-linux-arm64) |
+
+---
+
+### Terminal Installation (Alternative)
 
 **macOS / Linux:**
 ```bash
@@ -12,38 +58,20 @@ curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v${V
 iex (irm https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/install.ps1)
 ```
 
----
-
-### Downloads
-
-#### macOS
-| Architecture | Download |
-|--------------|----------|
-| Apple Silicon (M1/M2/M3/M4) | [clawbox-${VERSION}-darwin-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-darwin-arm64) |
-| Intel | [clawbox-${VERSION}-darwin-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-darwin-amd64) |
-
-#### Linux
-| Architecture | Download |
-|--------------|----------|
-| ARM64 | [clawbox-${VERSION}-linux-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-linux-arm64) |
-| x86_64 | [clawbox-${VERSION}-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-linux-amd64) |
-
-#### Windows
-| Architecture | Download |
-|--------------|----------|
-| x86_64 | [clawbox-${VERSION}-windows-amd64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-windows-amd64.exe) |
-| ARM64 | [clawbox-${VERSION}-windows-arm64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-windows-arm64.exe) |
-
-### Install Scripts
-| Platform | Script |
-|----------|--------|
-| macOS / Linux | [install.sh](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/install.sh) |
-| Windows | [install.ps1](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/install.ps1) |
-
 ### Checksums
 See [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/checksums.txt)
 
 ---
 
+### Security Notes
+
+**macOS:** Unsigned DMG. To bypass Gatekeeper, right-click the app and select "Open".
+
+**Windows:** Unsigned installer. Click "Run anyway" if you see a SmartScreen warning.
+
+**Linux:** Packages install normally on most distributions.
+
+---
+
 ### What's Changed
-See [CHANGELOG.md](CHANGELOG.md) for details.
+See [CHANGELOG.md](https://github.com/clawboxhq/clawbox-installer/blob/main/CHANGELOG.md) for details.
