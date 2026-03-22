@@ -150,7 +150,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: dist/*.exe
+          path: |
+            ClawBox-Setup-*.exe
+            dist/*.exe
 
   build-linux-packages:
     needs: build-binaries
@@ -200,6 +202,8 @@ jobs:
         with:
           name: linux-packages
           path: |
+            clawbox_*.deb
+            clawbox-*.rpm
             dist/*.deb
             dist/*.rpm
 
