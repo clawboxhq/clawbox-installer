@@ -25,7 +25,7 @@ fi
 
 # Build Windows binary if not exists
 if [ -f "${PROJECT_ROOT}/${BINARY_NAME}" ]; then
-    cp "${PROJECT_ROOT}/${BINARY_NAME}" "${BUILD_DIR}/"
+    [ "${PROJECT_ROOT}/${BINARY_NAME}" != "${BUILD_DIR}/${BINARY_NAME}" ] && cp "${PROJECT_ROOT}/${BINARY_NAME}" "${BUILD_DIR}/"
 elif [ -f "${PROJECT_ROOT}/dist/${BINARY_NAME}" ]; then
     cp "${PROJECT_ROOT}/dist/${BINARY_NAME}" "${BUILD_DIR}/"
 else
