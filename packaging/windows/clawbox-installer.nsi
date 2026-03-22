@@ -6,7 +6,6 @@
 !define APP_PUBLISHER "ClawBox Team"
 !define APP_URL "https://clawbox.ai"
 !define APP_EXE "clawbox.exe"
-!define APP_GUID "8F3D5B2A-1C4E-4F9B-A7D3-2E8C5F1B9A6D"
 
 ; Installer settings
 Name "${APP_NAME} ${APP_VERSION}"
@@ -21,9 +20,6 @@ SetCompressor /SOLID lzma
 
 ; UI Settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\modern-wizard.bmp"
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -59,10 +55,10 @@ Section "MainSection" SEC01
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-    ; Add to PATH
-    EnVar::AddValue "PATH" "$INSTDIR"
-    Pop $0
-
+    ; Add to PATH using EnVar plugin (if available) or registry
+    ; Store the install directory
+    WriteRegStr HKCU "Environment" "ClawBox_PATH" "$INSTDIR"
+    
     ; Create uninstaller registry entry
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "DisplayName" "${APP_NAME}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
@@ -80,10 +76,6 @@ SectionEnd
 
 ; Uninstaller
 Section "Uninstall"
-    ; Remove from PATH
-    EnVar::DeleteValue "PATH" "$INSTDIR"
-    Pop $0
-
     ; Delete files
     Delete "$INSTDIR\${APP_EXE}"
     Delete "$INSTDIR\Uninstall.exe"
@@ -97,4 +89,5 @@ Section "Uninstall"
     ; Delete registry keys
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
     DeleteRegKey HKLM "Software\${APP_NAME}"
+    DeleteRegValue HKCU "Environment" "ClawBox_PATH"
 SectionEnd
