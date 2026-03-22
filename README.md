@@ -8,6 +8,31 @@
 
 ---
 
+## Screenshots
+
+<!-- 
+TODO: Add screenshots when available
+- Installation process
+- Sandbox creation
+- AI code generation
+- Network policy management
+
+To add screenshots:
+1. Create `docs/assets/` directory
+2. Add PNG/GIF files
+3. Reference them here:
+
+![ClawBox Installation](docs/assets/installation.png)
+![Sandbox Dashboard](docs/assets/sandbox.png)
+![Network Policies](docs/assets/policies.png)
+-->
+
+| Installation | Sandbox | Policies |
+|--------------|---------|----------|
+| *Coming soon* | *Coming soon* | *Coming soon* |
+
+---
+
 ## Why ClawBox?
 
 | Problem | ClawBox Solution |
