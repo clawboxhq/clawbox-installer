@@ -83,58 +83,11 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
         with:
           name: ClawBox v${{ needs.build.outputs.version }}
-        body: |
-          ## ClawBox v${{ needs.build.outputs.version }}
-
-          ### One-Click Installation
-
-          **macOS / Linux:**
-          ```bash
-          curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/install.sh | bash
-          ```
-
-          **Windows (PowerShell):**
-          ```powershell
-          iex (irm https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/install.ps1)
-          ```
-
-          ---
-
-          ### Downloads
-
-          #### macOS
-          | Architecture | Download |
-          |--------------|----------|
-          | Apple Silicon (M1/M2/M3/M4) | [clawbox-${{ needs.build.outputs.version }}-darwin-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-darwin-arm64) |
-          | Intel | [clawbox-${{ needs.build.outputs.version }}-darwin-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-darwin-amd64) |
-
-          #### Linux
-          | Architecture | Download |
-          |--------------|----------|
-          | ARM64 | [clawbox-${{ needs.build.outputs.version }}-linux-arm64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-linux-arm64) |
-          | x86_64 | [clawbox-${{ needs.build.outputs.version }}-linux-amd64](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-linux-amd64) |
-
-          #### Windows
-          | Architecture | Download |
-          |--------------|----------|
-          | x86_64 | [clawbox-${{ needs.build.outputs.version }}-windows-amd64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-windows-amd64.exe) |
-          | ARM64 | [clawbox-${{ needs.build.outputs.version }}-windows-arm64.exe](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/clawbox-${{ needs.build.outputs.version }}-windows-arm64.exe) |
-
-          ### Install Scripts
-          | Platform | Script |
-          |----------|--------|
-          | macOS / Linux | [install.sh](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/install.sh) |
-          | Windows | [install.ps1](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/install.ps1) |
-
-          ### Checksums
-          See [checksums.txt](https://github.com/clawboxhq/clawbox-installer/releases/download/v${{ needs.build.outputs.version }}/checksums.txt)
-
-          ---
-
-          ### What's Changed
-          See [CHANGELOG.md](CHANGELOG.md) for details.
+          body_path: .github/release-template.md
           files: dist/*
           draft: false
           prerelease: ${{ contains(needs.build.outputs.version, '-') }}
