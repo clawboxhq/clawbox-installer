@@ -24,13 +24,20 @@ if ! command -v makensis &> /dev/null; then
 fi
 
 # Build Windows binary if not exists
-if [ -f "${PROJECT_ROOT}/${BINARY_NAME}" ]; then
-    [ "${PROJECT_ROOT}/${BINARY_NAME}" != "${BUILD_DIR}/${BINARY_NAME}" ] && cp "${PROJECT_ROOT}/${BINARY_NAME}" "${BUILD_DIR}/"
-elif [ -f "${PROJECT_ROOT}/dist/${BINARY_NAME}" ]; then
+if [ -f "${PROJECT_ROOT}/dist/${BINARY_NAME}" ]; then
+    echo "Using binary from dist/"
+    mkdir -p "${BUILD_DIR}"
     cp "${PROJECT_ROOT}/dist/${BINARY_NAME}" "${BUILD_DIR}/"
+elif [ -f "${PROJECT_ROOT}/${BINARY_NAME}" ]; then
+    echo "Using binary from project root"
+    if [ "${PROJECT_ROOT}" != "${BUILD_DIR}" ]; then
+        mkdir -p "${BUILD_DIR}"
+        cp "${PROJECT_ROOT}/${BINARY_NAME}" "${BUILD_DIR}/"
+    fi
 else
     echo "Building Windows binary..."
     cd "${PROJECT_ROOT}"
+    mkdir -p "${BUILD_DIR}"
     CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} go build -ldflags "-s -w -X main.Version=${VERSION}" -o "${BUILD_DIR}/${BINARY_NAME}" ./cmd/clawbox
 fi
 
@@ -63,10 +70,7 @@ cd "${BUILD_DIR}"
 # Prepare NSIS script with version substitution
 sed "s/\${VERSION}/${VERSION}/g" "${SCRIPT_DIR}/clawbox-installer.nsi" > clawbox-installer.nsi
 
-# Copy binary for NSIS
-cp "${BINARY_NAME}" .
-
-# Build installer
+# Build installer (binary is already in BUILD_DIR)
 echo "Building NSIS installer..."
 makensis -DVERSION=${VERSION} clawbox-installer.nsi
 
