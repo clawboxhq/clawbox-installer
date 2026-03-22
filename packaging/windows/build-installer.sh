@@ -6,8 +6,9 @@ set -e
 
 VERSION="${1:-0.4.0}"
 ARCH="${2:-amd64}"
-BUILD_DIR="build/windows"
-NSIS_SCRIPT="packaging/windows/clawbox-installer.nsi"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT}/build/windows"
 BINARY_NAME="clawbox-${VERSION}-windows-${ARCH}.exe"
 INSTALLER_NAME="ClawBox-Setup-${VERSION}.exe"
 
@@ -23,16 +24,19 @@ if ! command -v makensis &> /dev/null; then
 fi
 
 # Build Windows binary if not exists
-if [ ! -f "${BINARY_NAME}" ]; then
-    echo "Building Windows binary..."
-    CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} go build -ldflags "-s -w -X main.Version=${VERSION}" -o "${BUILD_DIR}/${BINARY_NAME}" ./cmd/clawbox
+if [ -f "${PROJECT_ROOT}/${BINARY_NAME}" ]; then
+    cp "${PROJECT_ROOT}/${BINARY_NAME}" "${BUILD_DIR}/"
+elif [ -f "${PROJECT_ROOT}/dist/${BINARY_NAME}" ]; then
+    cp "${PROJECT_ROOT}/dist/${BINARY_NAME}" "${BUILD_DIR}/"
 else
-    cp "${BINARY_NAME}" "${BUILD_DIR}/"
+    echo "Building Windows binary..."
+    cd "${PROJECT_ROOT}"
+    CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} go build -ldflags "-s -w -X main.Version=${VERSION}" -o "${BUILD_DIR}/${BINARY_NAME}" ./cmd/clawbox
 fi
 
 # Create LICENSE.txt for installer
-if [ -f "LICENSE" ]; then
-    cp LICENSE "${BUILD_DIR}/LICENSE.txt"
+if [ -f "${PROJECT_ROOT}/LICENSE" ]; then
+    cp "${PROJECT_ROOT}/LICENSE" "${BUILD_DIR}/LICENSE.txt"
 else
     cat > "${BUILD_DIR}/LICENSE.txt" << EOF
 ClawBox ${VERSION}
@@ -54,9 +58,10 @@ limitations under the License.
 EOF
 fi
 
-# Prepare NSIS script with version substitution
 cd "${BUILD_DIR}"
-sed "s/\${VERSION}/${VERSION}/g" "../${NSIS_SCRIPT}" > clawbox-installer.nsi
+
+# Prepare NSIS script with version substitution
+sed "s/\${VERSION}/${VERSION}/g" "${SCRIPT_DIR}/clawbox-installer.nsi" > clawbox-installer.nsi
 
 # Copy binary for NSIS
 cp "${BINARY_NAME}" .
@@ -65,11 +70,11 @@ cp "${BINARY_NAME}" .
 echo "Building NSIS installer..."
 makensis -DVERSION=${VERSION} clawbox-installer.nsi
 
-# Rename output
+# Output location
 if [ -f "${INSTALLER_NAME}" ]; then
-    mv "${INSTALLER_NAME}" "../${INSTALLER_NAME}"
+    mv "${INSTALLER_NAME}" "${PROJECT_ROOT}/${INSTALLER_NAME}"
     echo ""
-    echo "✓ Created: ../${INSTALLER_NAME}"
+    echo "✓ Created: ${PROJECT_ROOT}/${INSTALLER_NAME}"
 else
     echo "Error: Installer was not created"
     exit 1

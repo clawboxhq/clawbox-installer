@@ -6,7 +6,9 @@ set -e
 
 VERSION="${1:-0.4.0}"
 ARCH="${2:-amd64}"
-BUILD_DIR="build/packages"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT}/build/packages"
 BINARY_NAME="clawbox-${VERSION}-linux-${ARCH}"
 
 echo "Building ClawBox v${VERSION} packages for ${ARCH}"
@@ -14,9 +16,12 @@ echo "Building ClawBox v${VERSION} packages for ${ARCH}"
 # Build the binary first
 echo "Building binary..."
 mkdir -p "$BUILD_DIR"
-if [ -f "$BINARY_NAME" ]; then
-    cp "$BINARY_NAME" "$BUILD_DIR/clawbox"
+if [ -f "${PROJECT_ROOT}/${BINARY_NAME}" ]; then
+    cp "${PROJECT_ROOT}/${BINARY_NAME}" "$BUILD_DIR/clawbox"
+elif [ -f "${PROJECT_ROOT}/dist/${BINARY_NAME}" ]; then
+    cp "${PROJECT_ROOT}/dist/${BINARY_NAME}" "$BUILD_DIR/clawbox"
 else
+    cd "${PROJECT_ROOT}"
     CGO_ENABLED=0 GOOS=linux GOARCH=$ARCH go build -ldflags "-s -w -X main.Version=$VERSION" -o "$BUILD_DIR/clawbox" ./cmd/clawbox
 fi
 chmod +x "$BUILD_DIR/clawbox"
@@ -34,6 +39,7 @@ mkdir -p "$BUILD_DIR/completions"
 echo "Creating .deb package..."
 
 DEB_DIR="$BUILD_DIR/deb"
+rm -rf "$DEB_DIR"
 mkdir -p "$DEB_DIR/DEBIAN"
 mkdir -p "$DEB_DIR/usr/bin"
 mkdir -p "$DEB_DIR/usr/share/bash-completion/completions"
@@ -85,16 +91,14 @@ MANEOF
 gzip -f "$DEB_DIR/usr/share/man/man1/clawbox.1"
 
 # Create changelog
-cat > "$DEB_DIR/usr/share/doc/clawbox/changelog.gz" << 'CHANGELOG'
+cat > "$DEB_DIR/usr/share/doc/clawbox/changelog.Debian" << EOF
 clawbox (${VERSION}-1) stable; urgency=low
 
   * Initial release
 
  -- ClawBox Team <team@clawbox.ai>  $(date -R)
-CHANGELOG
-gzip -d "$DEB_DIR/usr/share/doc/clawbox/changelog.gz" 2>/dev/null || true
-cat "$DEB_DIR/usr/share/doc/clawbox/changelog" | gzip > "$DEB_DIR/usr/share/doc/clawbox/changelog.Debian.gz"
-rm -f "$DEB_DIR/usr/share/doc/clawbox/changelog"
+EOF
+gzip -f "$DEB_DIR/usr/share/doc/clawbox/changelog.Debian"
 
 # Create control file
 cat > "$DEB_DIR/DEBIAN/control" << EOF
@@ -145,7 +149,7 @@ DEB_ARCH=$ARCH
 [ "$ARCH" = "amd64" ] && DEB_ARCH="amd64"
 [ "$ARCH" = "arm64" ] && DEB_ARCH="arm64"
 
-dpkg-deb --build "$DEB_DIR" "clawbox_${VERSION}_${DEB_ARCH}.deb"
+dpkg-deb --build "$DEB_DIR" "${PROJECT_ROOT}/clawbox_${VERSION}_${DEB_ARCH}.deb"
 echo "✓ Created: clawbox_${VERSION}_${DEB_ARCH}.deb"
 
 # ============================================
@@ -154,12 +158,16 @@ echo "✓ Created: clawbox_${VERSION}_${DEB_ARCH}.deb"
 echo "Creating .rpm package..."
 
 RPM_DIR="$BUILD_DIR/rpm"
+rm -rf "$RPM_DIR"
 mkdir -p "$RPM_DIR/SOURCES"
 mkdir -p "$RPM_DIR/SPECS"
 mkdir -p "$RPM_DIR/BUILD"
+mkdir -p "$RPM_DIR/RPMS"
+mkdir -p "$RPM_DIR/SRPMS"
 
 # Create source tarball for RPM
 SRC_DIR="$BUILD_DIR/clawbox-${VERSION}"
+rm -rf "$SRC_DIR"
 mkdir -p "$SRC_DIR/usr/bin"
 mkdir -p "$SRC_DIR/completions"
 cp "$BUILD_DIR/clawbox" "$SRC_DIR/usr/bin/"
@@ -230,7 +238,7 @@ EOF
 if command -v rpmbuild &> /dev/null; then
     rpmbuild --define "_topdir $RPM_DIR" -bb "$RPM_DIR/SPECS/clawbox.spec"
     if [ -f "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" ]; then
-        cp "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" "clawbox-${VERSION}-1.$RPM_ARCH.rpm"
+        cp "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" "${PROJECT_ROOT}/clawbox-${VERSION}-1.$RPM_ARCH.rpm"
         echo "✓ Created: clawbox-${VERSION}-1.$RPM_ARCH.rpm"
     fi
 else
@@ -238,6 +246,7 @@ else
     echo "Spec file available at: $RPM_DIR/SPECS/clawbox.spec"
 fi
 
+cd "${PROJECT_ROOT}"
 echo ""
 echo "Package creation complete!"
 echo "Files created:"
