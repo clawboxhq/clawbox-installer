@@ -1,5 +1,9 @@
 ## ClawBox v${VERSION}
 
+Secure AI Assistant in a Box - One-click cross-platform installer for OpenShell + NemoClaw + OpenClaw with secure sandboxing and persistent volume mounting.
+
+---
+
 ### Easy Installation (Recommended)
 
 **macOS:**
@@ -15,6 +19,19 @@
 - Download `.deb` or `.rpm` → Double-click → Install
 - [Debian/Ubuntu (.deb)](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox_${VERSION}_amd64.deb)
 - [Fedora/RHEL (.rpm)](https://github.com/clawboxhq/clawbox-installer/releases/download/v${VERSION}/clawbox-${VERSION}-1.x86_64.rpm)
+
+---
+
+### Features
+
+- **One-Click GUI Installers** - Double-click to install on any platform
+- **Network Policy Management** - Control sandbox network access with presets
+- **Inference Routing** - Switch providers and models at runtime
+- **Multi-Provider Support** - NVIDIA, OpenAI, Anthropic, Ollama, and more
+- **Secure Sandboxing** - Isolated AI execution environment
+- **Persistent Volumes** - Your data persists across sessions
+- **Shell Completions** - Bash, Zsh, and Fish support
+- **Telegram Integration** - Control via mobile with opencode-telegram-bot
 
 ---
 
