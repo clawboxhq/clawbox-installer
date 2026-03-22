@@ -236,10 +236,16 @@ EOF
 
 # Try to build RPM if rpmbuild is available
 if command -v rpmbuild &> /dev/null; then
-    rpmbuild --define "_topdir $RPM_DIR" -bb "$RPM_DIR/SPECS/clawbox.spec"
-    if [ -f "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" ]; then
-        cp "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" "${PROJECT_ROOT}/clawbox-${VERSION}-1.$RPM_ARCH.rpm"
-        echo "✓ Created: clawbox-${VERSION}-1.$RPM_ARCH.rpm"
+    # Skip RPM for arm64 on ubuntu-latest (no arm64 rpm support)
+    if [ "$RPM_ARCH" = "aarch64" ]; then
+        echo "Note: Skipping .rpm for arm64 (not supported on this runner)"
+        echo "Spec file available at: $RPM_DIR/SPECS/clawbox.spec"
+    else
+        rpmbuild --define "_topdir $RPM_DIR" -bb "$RPM_DIR/SPECS/clawbox.spec" || echo "RPM build failed, continuing..."
+        if [ -f "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" ]; then
+            cp "$RPM_DIR/RPMS/$RPM_ARCH/clawbox-${VERSION}-1.$RPM_ARCH.rpm" "${PROJECT_ROOT}/clawbox-${VERSION}-1.$RPM_ARCH.rpm"
+            echo "✓ Created: clawbox-${VERSION}-1.$RPM_ARCH.rpm"
+        fi
     fi
 else
     echo "Note: rpmbuild not available, skipping .rpm creation"

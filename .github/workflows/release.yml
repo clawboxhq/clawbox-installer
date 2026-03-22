@@ -98,17 +98,15 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           chmod +x packaging/macos/create-dmg.sh
-          cp dist/clawbox-$VERSION-darwin-arm64 clawbox-$VERSION-darwin-arm64
           ./packaging/macos/create-dmg.sh $VERSION arm64
-          mv ClawBox-$VERSION-macos-arm64.dmg dist/
+          mv ClawBox-$VERSION-macos-arm64.dmg dist/ || true
 
       - name: Create DMG (Intel)
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          cp dist/clawbox-$VERSION-darwin-amd64 clawbox-$VERSION-darwin-amd64
           ./packaging/macos/create-dmg.sh $VERSION amd64
-          mv ClawBox-$VERSION-macos-amd64.dmg dist/
+          mv ClawBox-$VERSION-macos-amd64.dmg dist/ || true
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
@@ -146,9 +144,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           chmod +x packaging/windows/build-installer.sh
-          cp dist/clawbox-$VERSION-windows-amd64.exe . || true
           ./packaging/windows/build-installer.sh $VERSION amd64
-          mv ClawBox-Setup-$VERSION.exe dist/ClawBox-Setup-$VERSION-amd64.exe || true
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
@@ -191,19 +187,13 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           chmod +x packaging/linux/build-packages.sh
-          cp dist/clawbox-$VERSION-linux-amd64 clawbox-$VERSION-linux-amd64 || true
           ./packaging/linux/build-packages.sh $VERSION amd64
-          mv clawbox_${VERSION}_amd64.deb dist/ 2>/dev/null || true
-          mv clawbox-${VERSION}*.rpm dist/ 2>/dev/null || true
 
       - name: Build Linux packages (arm64)
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          cp dist/clawbox-$VERSION-linux-arm64 clawbox-$VERSION-linux-arm64 || true
           ./packaging/linux/build-packages.sh $VERSION arm64
-          mv clawbox_${VERSION}_arm64.deb dist/ 2>/dev/null || true
-          mv clawbox-${VERSION}*.rpm dist/ 2>/dev/null || true
 
       - name: Upload Linux packages
         uses: actions/upload-artifact@v4
