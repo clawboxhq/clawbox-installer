@@ -1,59 +1,78 @@
-# 🦞 ClawBox
+# ClawBox - Run AI Locally. Execute Code Safely.
 
-**Secure AI Assistant in a Box**
-
-Cross-platform CLI for deploying OpenShell + NemoClaw + OpenClaw with secure sandboxing, persistent volume mounting, and network policy management.
+**The secure local AI assistant for developers who can't risk cloud AI tools.**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20WSL2-success.svg)]()
-[![Version](https://img.shields.io/badge/Version-0.3.0--beta-orange.svg)]()
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-success.svg)]()
+[![Version](https://img.shields.io/badge/Version-0.1.0-orange.svg)]()
 
 ---
 
-## Installation
+## Why ClawBox?
 
-### One-Line Install
-
-```bash
-# macOS/Linux
-curl -fsSL https://github.com/clawboxhq/clawbox-installer/releases/download/v0.3.0/clawbox-0.3.0-darwin-arm64 -o clawbox
-chmod +x clawbox
-sudo mv clawbox /usr/local/bin/
-```
-
-### Manual Build
-
-```bash
-git clone https://github.com/clawboxhq/clawbox-installer.git
-cd clawbox-installer
-make build
-sudo make install
-```
+| Problem | ClawBox Solution |
+|---------|------------------|
+| "I can't use Copilot due to company policy" | **100% local** - zero telemetry, no data leaves your machine |
+| "AI-generated code might be malicious" | **Sandboxed execution** - code runs in isolated environment |
+| "I need to control what AI can access" | **Network policies** - block by default, allow explicitly |
+| "My company needs audit trails" | **Execution logging** - full audit capability (coming soon) |
 
 ---
 
-## Usage
+## One-Command Install
 
+**macOS / Linux:**
 ```bash
-clawbox [command] [flags]
+curl -fsSL https://clawbox.ai/install | bash
 ```
 
-### Commands
+**Windows (PowerShell):**
+```powershell
+iex (irm https://clawbox.ai/install.ps1)
+```
 
-| Command | Description |
-|---------|-------------|
-| `install` | Install ClawBox and all dependencies |
-| `uninstall` | Remove ClawBox installation |
-| `sandbox` | Manage OpenShell sandboxes |
-| `provider` | Manage LLM providers |
-| `policy` | Manage network policies |
-| `inference` | Manage inference routing |
-| `config` | Manage configuration |
-| `monitor` | Open TUI monitoring dashboard |
-| `status` | Show system status |
-| `doctor` | Run diagnostics and health checks |
-| `update` | Update ClawBox components |
-| `version` | Show version information |
+**Or download installers:**
+- [macOS DMG](https://github.com/clawboxhq/clawbox-installer/releases/latest) - Double-click to install
+- [Windows Installer](https://github.com/clawboxhq/clawbox-installer/releases/latest) - Setup wizard
+- [Linux Packages](https://github.com/clawboxhq/clawbox-installer/releases/latest) - .deb and .rpm available
+
+---
+
+## How ClawBox Compares
+
+| Feature | ClawBox | Ollama | LM Studio | Open WebUI | GitHub Copilot |
+|---------|---------|--------|-----------|------------|----------------|
+| Sandboxed code execution | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Network policy control | ✅ 10 presets | ❌ | ❌ | ❌ | ❌ |
+| 100% offline | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Zero telemetry | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Multi-provider support | ✅ | 🟡 Limited | ✅ | ✅ | ❌ |
+| Works without GPU | ✅ | 🟡 Limited | ✅ | ✅ | ✅ |
+| One-click GUI installer | ✅ | ✅ | ✅ | ❌ | N/A |
+| Hot-swap models | ✅ | 🟡 Restart | 🟡 Manual | 🟡 Manual | N/A |
+
+**ClawBox is for developers who need security guarantees that other tools don't provide.**
+
+---
+
+## Quick Start
+
+After installation:
+
+```bash
+# Check everything is working
+clawbox version
+
+# Install and configure AI providers
+clawbox install
+
+# Start a sandbox
+clawbox sandbox create dev --provider ollama --model llama3.2
+clawbox sandbox start dev
+
+# Connect and start coding
+clawbox sandbox connect dev
+```
 
 ---
 
@@ -82,7 +101,7 @@ clawbox [command] [flags]
 
 ## Network Policies
 
-Control which endpoints your sandbox can reach. By default, all unlisted endpoints are blocked.
+Control which endpoints your sandbox can reach. **All unlisted endpoints are blocked by default.**
 
 ### Built-in Presets
 
@@ -111,12 +130,6 @@ clawbox policy add my-assistant github
 # List applied policies
 clawbox policy list my-assistant
 
-# Show full policy YAML
-clawbox policy show my-assistant
-
-# Edit policy (pull/edit/push workflow)
-clawbox policy edit my-assistant
-
 # Add custom endpoint
 clawbox policy custom my-assistant --host api.company.com --port 443
 ```
@@ -127,8 +140,6 @@ clawbox policy custom my-assistant --host api.company.com --port 443
 
 Switch providers and models at runtime without restarting sandboxes.
 
-### Inference Commands
-
 ```bash
 # Switch to different provider/model
 clawbox inference set my-assistant --provider openai --model gpt-4o
@@ -136,114 +147,31 @@ clawbox inference set my-assistant --provider openai --model gpt-4o
 # Show current inference configuration
 clawbox inference status my-assistant
 
-# List common models
-clawbox inference models
-
 # List available models for a provider
 clawbox inference list-models openai
 ```
 
 ---
 
-## Examples
+## Commands Reference
 
-### Installation
-
-```bash
-# Interactive installation
-clawbox install
-
-# Non-interactive with specific provider
-clawbox install --provider openai --non-interactive
-
-# Local LLM with Ollama
-clawbox install --provider ollama --model llama3.2
-
-# Custom endpoint
-clawbox install --provider custom --endpoint https://my-api.example.com/v1 --api-key my-key
-```
-
-### Provider Management
-
-```bash
-# List providers
-clawbox provider list
-
-# Add cloud provider
-clawbox provider add my-openai --type openai --api-key sk-xxx
-
-# Add local provider
-clawbox provider add my-ollama --type ollama --endpoint http://localhost:11434
-
-# Sync provider to OpenShell
-clawbox provider sync my-openai
-
-# Test connection
-clawbox provider test my-ollama
-
-# Set default
-clawbox provider default my-openai
-```
-
-### Sandbox Management
-
-```bash
-# Create sandbox
-clawbox sandbox create dev --provider ollama --model llama3.2
-
-# List sandboxes
-clawbox sandbox list
-
-# Start/stop
-clawbox sandbox start dev
-clawbox sandbox stop dev
-
-# Connect
-clawbox sandbox connect dev
-
-# View logs
-clawbox sandbox logs dev --follow
-```
-
-### Monitoring
-
-```bash
-# Open TUI monitoring dashboard
-clawbox monitor
-
-# Run diagnostics
-clawbox doctor
-
-# Verbose output
-clawbox doctor --verbose
-
-# JSON output
-clawbox doctor --json
-```
-
-### Configuration
-
-```bash
-# Show config
-clawbox config show
-
-# Set values
-clawbox config set defaultProvider ollama
-
-# Edit config
-clawbox config edit
-
-# Show config path
-clawbox config path
-```
+| Command | Description |
+|---------|-------------|
+| `install` | Install ClawBox and configure providers |
+| `sandbox` | Manage OpenShell sandboxes |
+| `provider` | Manage LLM providers |
+| `policy` | Manage network policies |
+| `inference` | Manage inference routing |
+| `config` | Manage configuration |
+| `monitor` | Open TUI monitoring dashboard |
+| `doctor` | Run diagnostics and health checks |
+| `version` | Show version information |
 
 ---
 
 ## Configuration
 
-Configuration is stored in JSON format at `~/.clawbox/config.json`.
-
-### Example Configuration
+Configuration stored at `~/.clawbox/config.json`:
 
 ```json
 {
@@ -254,57 +182,18 @@ Configuration is stored in JSON format at `~/.clawbox/config.json`.
       "type": "ollama",
       "endpoint": "http://localhost:11434",
       "defaultModel": "llama3.2"
-    },
-    "openai": {
-      "name": "openai",
-      "type": "openai",
-      "endpoint": "https://api.openai.com/v1",
-      "apiKey": "sk-xxx",
-      "defaultModel": "gpt-4o"
     }
   },
   "sandboxes": [
     {
-      "name": "my-assistant",
+      "name": "dev",
       "provider": "ollama",
       "model": "llama3.2",
       "port": 18789,
       "policies": ["github", "slack"]
     }
-  ],
-  "containerRuntime": "docker"
+  ]
 }
-```
-
-### Custom Config Location
-
-```bash
-clawbox --config /path/to/config.json [command]
-```
-
----
-
-## Shell Completions
-
-### Bash
-
-```bash
-clawbox completion bash > /etc/bash_completion.d/clawbox
-source ~/.bashrc
-```
-
-### Zsh
-
-```bash
-clawbox completion zsh > "${fpath[1]}/_clawbox"
-source ~/.zshrc
-```
-
-### Fish
-
-```bash
-clawbox completion fish > ~/.config/fish/completions/clawbox.fish
-source ~/.config/fish/config.fish
 ```
 
 ---
@@ -313,42 +202,51 @@ source ~/.config/fish/config.fish
 
 | Platform | Requirements |
 |----------|--------------|
-| macOS | Apple Silicon (M1/M2/M3/M4), macOS 14.0+ |
-| Linux | x86_64 or ARM64, Ubuntu 22.04+ |
-| Windows | Windows 10/11 with WSL2 |
+| macOS | macOS 11+ (Big Sur or later) |
+| Linux | glibc 2.31+ (Ubuntu 20.04+, Debian 11+, Fedora 34+) |
+| Windows | Windows 10+ or Windows Server 2019+ |
 
-- **RAM**: 8 GB minimum, 16 GB recommended
-- **Disk**: 20 GB free space minimum
-- **Network**: Internet connection required
+**Hardware:**
+- 4GB RAM minimum (8GB recommended)
+- 1GB disk space
+- Internet connection for initial setup
 
 ---
 
-## Project Structure
+## Security Architecture
 
 ```
-clawbox/
-├── cmd/clawbox/           # CLI entry point
-│   └── cmd/               # Command implementations
-├── internal/              # Internal packages
-│   ├── provider/          # Provider system
-│   └── policy/            # Policy management
-├── completions/           # Shell completions
-├── go.mod                 # Go module definition
-├── go.sum                 # Dependency checksums
-└── Makefile               # Build configuration
+┌─────────────────────────────────────────────────────────┐
+│                     Your Machine                         │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                  ClawBox CLI                         ││
+│  │  • Provider management                               ││
+│  │  • Policy enforcement                                ││
+│  │  • Audit logging                                     ││
+│  └──────────────────────┬──────────────────────────────┘│
+│                         │                                │
+│  ┌──────────────────────▼──────────────────────────────┐│
+│  │              Sandbox Environment                     ││
+│  │  ┌─────────────────────────────────────────────────┐││
+│  │  │          Isolated Container                      │││
+│  │  │  • AI-generated code runs here                  │││
+│  │  │  • No access to host filesystem                 │││
+│  │  │  • Network policies enforced                    │││
+│  │  └─────────────────────────────────────────────────┘││
+│  └─────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Community
+
+- **Discord**: [Join Discussion](https://discord.gg/XFpfPv9Uvx)
+- **Issues**: [GitHub Issues](https://github.com/clawboxhq/clawbox-installer/issues)
+- **OpenClaw Docs**: https://docs.openclaw.ai
 
 ---
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE) file for details.
-
----
-
-## Support
-
-- **Issues**: https://github.com/clawboxhq/clawbox-installer/issues
-- **Discord**: https://discord.gg/XFpfPv9Uvx
-- **OpenClaw Docs**: https://docs.openclaw.ai
-- **NemoClaw Docs**: https://docs.nvidia.com/nemoclaw/
+Apache License 2.0 - See [LICENSE](LICENSE) for details.
