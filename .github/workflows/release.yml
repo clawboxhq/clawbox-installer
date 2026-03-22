@@ -81,13 +81,17 @@ jobs:
       - name: List files
         run: ls -la dist/
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Prepare release notes
         env:
           VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          sed "s/\${VERSION}/${VERSION}/g" .github/release-template.md > /tmp/release-notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
           name: ClawBox v${{ needs.build.outputs.version }}
-          body_path: .github/release-template.md
+          body_path: /tmp/release-notes.md
           files: dist/*
           draft: false
           prerelease: ${{ contains(needs.build.outputs.version, '-') }}
