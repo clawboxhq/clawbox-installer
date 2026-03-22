@@ -9,7 +9,7 @@ import (
 
 var (
 	// Version is set at build time
-	Version = "0.5.1"
+	Version = "0.1.0"
 	// GitCommit is set at build time
 	GitCommit = "unknown"
 	// BuildDate is set at build time
