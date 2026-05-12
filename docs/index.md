@@ -97,7 +97,6 @@ clawbox sandbox connect dev
 ## Community
 
 - **GitHub**: [clawboxhq/clawbox-installer](https://github.com/clawboxhq/clawbox-installer)
-- **Discord**: [Join Discussion](https://discord.gg/XFpfP9vUvx)
 - **Issues**: [GitHub Issues](https://github.com/clawboxhq/clawbox-installer/issues)
 - **Documentation**: [docs.openclaw.ai](https://docs.openclaw.ai)
 

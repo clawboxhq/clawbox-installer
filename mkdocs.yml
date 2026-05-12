@@ -38,9 +38,6 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/clawboxhq/clawbox-installer
-    - icon: fontawesome/brands/discord
-      link: https://discord.gg/XFpfP9vUvx
-
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -67,6 +64,5 @@ nav:
   - Architecture: ARCHITECTURE.md
   - Blog:
     - Why AI-Generated Code Needs a Sandbox: blog/why-ai-generated-code-needs-a-sandbox.md
-  - Community: discord-server-structure.md
   - Launch Checklist: launch-checklist.md
   - Demo Video Script: demo-video-script.md
